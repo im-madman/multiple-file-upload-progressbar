@@ -2,7 +2,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
 <style>
 #myBar {
-    width: 10%;
+    width: 0%;
     height: 30px;
     background-color: #4CAF50;
     text-align: center; /* To center it horizontally (if you want) */
@@ -27,7 +27,17 @@
 <input type='file' name='files' class='files'>
 <button type='button' onclick='clickHandler()'> upload </button>
 
+<div class='all-upload-files'>
+
+</div>
 <script>
+
+     function  appendFiles ( filePath ) {
+
+        var files = "<div style='margin-bottom:10px;'><a class='delete-file' data-file-path='"+filePath+"' href='javascript:void(0);'>"+filePath+" </a> </div>";
+
+        $(".all-upload-files").append( files );
+     }
 
 	 function clickHandler() {
 
@@ -50,14 +60,27 @@
 	        success: function(result) {
 	            console.log($.ajaxSettings.xhr().upload);
 
+                $(".files").val('');
                 $('#myBar').text('');
                 $('#myBar').css("width", '0%');
+
+                var parsedData = result;
+
+                if ( parsedData.success == '1' ) {
+
+                     appendFiles( parsedData.file_path );
+                } 
 
 	            alert('upload is done');
 
 	        },
 	        "error": function(x, y, z) {
-	            alert("An error has occured:\n" + JSON.stringify(x) + "\n" + JSON.stringify(y) + "\n" + JSON.stringify(z));
+
+                $(".files").val('');    
+	            $('#myBar').text('');
+                $('#myBar').css("width", '0%');
+
+                alert("An error has occured:\n" + JSON.stringify(x) + "\n" + JSON.stringify(y) + "\n" + JSON.stringify(z));
 	        },
 	        data: form,
 	        cache: false,
@@ -76,6 +99,21 @@
             
         }
     }
+
+    $("body").on("click", ".delete-file", function() {
+
+    	 var file_path = $(this).attr('data-file-path');
+
+    	 $.post('server/delete.php', {file_path:file_path}, function(response){ 
+
+             var parsedData = JSON.parse( response );
+             if ( parsedData.success == '1' ) {
+
+                  $("a[data-file-path='"+file_path+"']").parent().remove();
+             } 
+
+    	 });
+    });
 
 </script>
 </body>
